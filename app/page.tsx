@@ -1,103 +1,153 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [category, setCategory] = useState<"Human" | "Brand" | "Pet" | "Character">("Human");
+  const [keywords, setKeywords] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [names, setNames] = useState<string[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // For now, only Human uses the API. Others use tiny seed lists (MVP).
+  const brandSeeds = ["Fluxora", "BrightNest", "NovaMint", "Kindora", "Verdiant"];
+  const petSeeds = ["Milo", "Luna", "Buddy", "Bella", "Coco", "Rocky", "Daisy"];
+  const characterSeeds = ["Aelric", "Mirella", "Torren", "Lyra", "Kael", "Seraphine"];
+
+  async function handleGenerate() {
+    setLoading(true);
+    try {
+      if (category === "Human") {
+        const res = await fetch("/api/random-people");
+        const data = await res.json();
+        setNames(data.names || []);
+      } else if (category === "Brand") {
+        setNames(shuffle(applyKeywordHint(brandSeeds, keywords)).slice(0, 10));
+      } else if (category === "Pet") {
+        setNames(shuffle(applyKeywordHint(petSeeds, keywords)).slice(0, 10));
+      } else {
+        setNames(shuffle(applyKeywordHint(characterSeeds, keywords)).slice(0, 10));
+      }
+    } catch (e) {
+      console.error(e);
+      setNames([]);
+      alert("Oops — couldn’t get names. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function applyKeywordHint(list: string[], kw: string) {
+    if (!kw.trim()) return list;
+    const k = kw.trim().toLowerCase();
+    // super simple hinting: add the keyword to the start/end sometimes
+    const extended = list.map(n => (Math.random() > 0.5 ? `${capitalize(k)} ${n}` : `${n} ${capitalize(k)}`));
+    return [...list, ...extended];
+  }
+
+  function shuffle<T>(arr: T[]) {
+    return [...arr].sort(() => Math.random() - 0.5);
+  }
+
+  function capitalize(s: string) {
+    return s ? s[0].toUpperCase() + s.slice(1) : s;
+  }
+
+  async function copyToClipboard(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Copied!");
+    } catch {
+      alert("Couldn’t copy — try selecting and copying manually.");
+    }
+  }
+
+  function openDotComSearch(name: string) {
+    // Opens a registrar search for name.com – simple and free for now
+    const q = encodeURIComponent(name.replace(/\s+/g, "") + ".com");
+    window.open(`https://www.namecheap.com/domains/registration/results/?domain=${q}`, "_blank");
+  }
+
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-[#0f172a] to-black text-white">
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <h1 className="text-3xl md:text-4xl font-semibold">Name Generator</h1>
+        <p className="mt-2 text-white/70">
+          Parents, writers, and founders — get ideas fast. Pick a category, add optional keywords, and hit Generate.
+        </p>
+
+        {/* Controls */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select
+            className="rounded-md bg-white/10 border border-white/20 px-3 py-2"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as any)}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <option>Human</option>
+            <option>Brand</option>
+            <option>Pet</option>
+            <option>Character</option>
+          </select>
+
+          <input
+            className="rounded-md bg-white/10 border border-white/20 px-3 py-2"
+            placeholder="Keywords (optional)… e.g., nature, bold"
+            value={keywords}
+            onChange={(e) => setKeywords(e.target.value)}
+          />
+
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="rounded-md bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 transition px-4 py-2 font-medium disabled:opacity-60"
           >
-            Read our docs
+            {loading ? "Generating…" : "Generate"}
+          </button>
+        </div>
+
+        {/* Results */}
+        <div className="mt-8 space-y-3">
+          {names.length === 0 && (
+            <div className="text-white/60">No names yet. Click Generate 👆</div>
+          )}
+
+          {names.map((n) => {
+            const clean = n.trim().replace(/\s+/g, " ");
+            return (
+              <div
+                key={n + Math.random()}
+                className="flex items-center justify-between rounded-lg border border-white/15 bg-white/5 px-4 py-3"
+              >
+                <span className="text-lg">{clean}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => copyToClipboard(clean)}
+                    className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5"
+                  >
+                    Copy
+                  </button>
+                  <button
+                    onClick={() => openDotComSearch(clean)}
+                    className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5"
+                  >
+                    Check .com
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Simple footer */}
+        <div className="mt-10 text-sm text-white/50">
+          <a
+            className="underline hover:text-white"
+            href="https://stripe.com"
+            target="_blank"
+          >
+            Go Premium (coming next)
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
 }
