@@ -1,5 +1,5 @@
 "use client";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../lib/supabase";
 import { useEffect, useState } from "react";
 
 export default function AuthBar() {
