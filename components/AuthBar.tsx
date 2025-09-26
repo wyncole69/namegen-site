@@ -1,16 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";   // ← relative import
+import { supabase } from "../lib/supabase";
 
 export default function AuthBar() {
+  console.log("✅ AuthBar loaded"); // debug
+
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) =>
-      setEmail(session?.user?.email ?? null)
-    );
+    supabase.auth.getUser().then(({ data }) => {
+      console.log("👤 User data:", data.user);
+      setEmail(data.user?.email ?? null);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
+
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -52,4 +59,3 @@ export default function AuthBar() {
     </div>
   );
 }
-
