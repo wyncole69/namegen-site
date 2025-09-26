@@ -37,6 +37,20 @@ export default function Home() {
       setError("Couldn’t get names. Try again.");
     } finally {
       setLoading(false);
+      async function addFavorite(name: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert("Please log in to save favorites.");
+    return;
+  }
+  const { error } = await supabase.from("favorites").insert({
+    user_id: user.id,
+    name,
+  });
+  if (error) alert(error.message);
+  else alert("Saved to favorites ❤️");
+}
+
     }
   }
 
