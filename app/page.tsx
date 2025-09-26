@@ -11,6 +11,7 @@ export default function Home() {
   const [names, setNames] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Seed lists for non‑API categories (MVP)
   const brandSeeds = ["Fluxora", "BrightNest", "NovaMint", "Kindora", "Verdiant"];
   const petSeeds = ["Milo", "Luna", "Buddy", "Bella", "Coco", "Rocky", "Daisy"];
   const characterSeeds = ["Aelric", "Mirella", "Torren", "Lyra", "Kael", "Seraphine"];
@@ -37,68 +38,69 @@ export default function Home() {
       setError("Couldn’t get names. Try again.");
     } finally {
       setLoading(false);
-      async function addFavorite(name: string) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please log in to save favorites.");
-    return;
-  }
-  const { error } = await supabase.from("favorites").insert({
-    user_id: user.id,
-    name,
-  });
-  if (error) alert(error.message);
-  else alert("Saved to favorites ❤️");
-}
-
     }
   }
 
-  function pickTen(list: string[]) { return shuffle(list).slice(0, 10); }
+  // ---- helpers ----
+  function pickTen(list: string[]) {
+    return shuffle(list).slice(0, 10);
+  }
   function applyKeywordHint(list: string[], kw: string) {
     if (!kw.trim()) return list;
     const k = kw.trim();
-    const extended = list.map(n => (Math.random() > 0.5 ? `${capitalize(k)} ${n}` : `${n} ${capitalize(k)}`));
+    const extended = list.map((n) =>
+      Math.random() > 0.5 ? `${capitalize(k)} ${n}` : `${n} ${capitalize(k)}`
+    );
     return [...list, ...extended];
   }
-  function shuffle<T>(arr: T[]) { return [...arr].sort(() => Math.random() - 0.5); }
-  function capitalize(s: string) { return s ? s[0].toUpperCase() + s.slice(1) : s; }
+  function shuffle<T>(arr: T[]) {
+    return [...arr].sort(() => Math.random() - 0.5);
+  }
+  function capitalize(s: string) {
+    return s ? s[0].toUpperCase() + s.slice(1) : s;
+  }
 
   async function copyToClipboard(text: string) {
-    try { await navigator.clipboard.writeText(text); alert("Copied!"); }
-    catch { alert("Couldn’t copy — copy manually."); }
-    async function addFavorite(name: string) {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    alert("Please log in to save favorites.");
-    return;
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Copied!");
+    } catch {
+      alert("Couldn’t copy — copy manually.");
+    }
   }
 
-  const { error } = await supabase.from("favorites").insert({
-    user_id: user.id,
-    name,
-  });
-
-  if (error) {
-    alert("Could not save: " + error.message);
-  } else {
-    alert("Saved to favorites ❤️");
+  async function addFavorite(name: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert("Please log in to save favorites.");
+      return;
+    }
+    const { error } = await supabase.from("favorites").insert({
+      user_id: user.id,
+      name,
+    });
+    if (error) alert("Could not save: " + error.message);
+    else alert("Saved to favorites ❤️");
   }
-}
 
-  }
   function openDotComSearch(name: string) {
     const q = encodeURIComponent(name.replace(/\s+/g, "") + ".com");
-    window.open(`https://www.namecheap.com/domains/registration/results/?domain=${q}`, "_blank");
+    window.open(
+      `https://www.namecheap.com/domains/registration/results/?domain=${q}`,
+      "_blank"
+    );
   }
 
+  // ---- UI ----
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#0f172a] to-black text-white">
       <div className="mx-auto max-w-2xl px-4 py-12">
         <h1 className="text-3xl md:text-4xl font-semibold">Name Generator</h1>
-        <p className="mt-2 text-white/70">Pick a category, add optional keywords, and hit Generate.</p>
+        <p className="mt-2 text-white/70">
+          Pick a category, add optional keywords, and hit Generate.
+        </p>
 
+        {/* Controls */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
           <select
             className="rounded-md bg-white/10 border border-white/20 px-3 py-2"
@@ -127,32 +129,45 @@ export default function Home() {
           </button>
         </div>
 
-        {error && <div className="mt-4 rounded-md bg-red-500/20 border border-red-400/40 px-3 py-2 text-red-100">{error}</div>}
+        {error && (
+          <div className="mt-4 rounded-md bg-red-500/20 border border-red-400/40 px-3 py-2 text-red-100">
+            {error}
+          </div>
+        )}
 
+        {/* Results */}
         <div className="mt-8 space-y-3">
-          {names.length === 0 && !error && <div className="text-white/60">No names yet. Click Generate 👆</div>}
+          {names.length === 0 && !error && (
+            <div className="text-white/60">No names yet. Click Generate 👆</div>
+          )}
 
           {names.map((n, i) => {
             const clean = n.trim().replace(/\s+/g, " ");
             return (
-              <div key={`${clean}-${i}`} className="flex items-center justify-between rounded-lg border border-white/15 bg-white/5 px-4 py-3">
+              <div
+                key={`${clean}-${i}`}
+                className="flex items-center justify-between rounded-lg border border-white/15 bg-white/5 px-4 py-3"
+              >
                 <span className="text-lg">{clean}</span>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => copyToClipboard(clean)} className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5">Copy</button>
-                  <button onClick={() => openDotComSearch(clean)} className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5">Check .com</button>
-                  <div className="flex items-center gap-2">
-  <button onClick={() => copyToClipboard(clean)}>Copy</button>
-  <button onClick={() => openDotComSearch(clean)}>Check .com</button>
-  <button onClick={() => addFavorite(clean)}>Favorite</button>
-                    <button
-  onClick={() => addFavorite(clean)}
-  className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5"
->
-  Favorite
-</button>
-
-</div>
-
+                  <button
+                    onClick={() => copyToClipboard(clean)}
+                    className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5"
+                  >
+                    Copy
+                  </button>
+                  <button
+                    onClick={() => openDotComSearch(clean)}
+                    className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5"
+                  >
+                    Check .com
+                  </button>
+                  <button
+                    onClick={() => addFavorite(clean)}
+                    className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5"
+                  >
+                    Favorite
+                  </button>
                 </div>
               </div>
             );
