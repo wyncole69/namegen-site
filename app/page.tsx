@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 type Category = "Human" | "Brand" | "Pet" | "Character";
 
@@ -52,6 +53,26 @@ export default function Home() {
   async function copyToClipboard(text: string) {
     try { await navigator.clipboard.writeText(text); alert("Copied!"); }
     catch { alert("Couldn’t copy — copy manually."); }
+    async function addFavorite(name: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    alert("Please log in to save favorites.");
+    return;
+  }
+
+  const { error } = await supabase.from("favorites").insert({
+    user_id: user.id,
+    name,
+  });
+
+  if (error) {
+    alert("Could not save: " + error.message);
+  } else {
+    alert("Saved to favorites ❤️");
+  }
+}
+
   }
   function openDotComSearch(name: string) {
     const q = encodeURIComponent(name.replace(/\s+/g, "") + ".com");
@@ -105,6 +126,12 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <button onClick={() => copyToClipboard(clean)} className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5">Copy</button>
                   <button onClick={() => openDotComSearch(clean)} className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5">Check .com</button>
+                  <div className="flex items-center gap-2">
+  <button onClick={() => copyToClipboard(clean)}>Copy</button>
+  <button onClick={() => openDotComSearch(clean)}>Check .com</button>
+  <button onClick={() => addFavorite(clean)}>Favorite</button>
+</div>
+
                 </div>
               </div>
             );
