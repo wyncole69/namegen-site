@@ -1,4 +1,4 @@
-<div style={{color:"#fff"}}>DEBUG HEADER</div>
+import AuthBar from "../components/AuthBar";
 import "./globals.css";
 import type { Metadata } from "next";
 
