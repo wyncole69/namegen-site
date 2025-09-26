@@ -1,11 +1,16 @@
-/* app/globals.css — minimal, no Tailwind features required for now */
-html, body {
-  min-height: 100%;
-  margin: 0;
-  padding: 0;
-  background: #111;     /* dark background so white text shows */
-  color: #fff;          /* white text for contrast */
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+@import "tailwindcss";
+
+:root {
+  --background: #0f172a;
+  --foreground: #ffffff;
 }
 
-/* You can re-enable Tailwind later; for now we keep it simple to rule out CSS issues. */
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
