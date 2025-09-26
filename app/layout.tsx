@@ -1,7 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import AuthBar from "@/components/AuthBar";
+import AuthBar from "../components/AuthBar";
 
 export const metadata: Metadata = {
   title: "Name Generator",
