@@ -12,18 +12,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div style={{ padding: "12px 16px", background: "rgba(255,255,255,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", maxWidth: 900, margin: "0 auto" }}>
-            <a href="/" style={{ fontWeight: 600 }}>NameGen</a>
-            <div style={{ display: "flex", gap: 12 }}>
-              <a href="/favorites">Favorites</a>
+        {/* Top bar */}
+        <div className="px-6 py-4 border-b border-white/10 bg-white/5">
+          <div className="mx-auto max-w-2xl flex items-center justify-between">
+            <a href="/" className="font-semibold">NameGen</a>
+            <div className="flex items-center gap-4">
+              <a href="/favorites" className="hover:underline">Favorites</a>
               <AuthBar />
             </div>
           </div>
         </div>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>{children}</div>
+
+        {/* Page content */}
+        <div className="mx-auto max-w-2xl">{children}</div>
       </body>
     </html>
   );
 }
+
 
