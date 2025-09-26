@@ -144,6 +144,13 @@ export default function Home() {
   <button onClick={() => copyToClipboard(clean)}>Copy</button>
   <button onClick={() => openDotComSearch(clean)}>Check .com</button>
   <button onClick={() => addFavorite(clean)}>Favorite</button>
+                    <button
+  onClick={() => addFavorite(clean)}
+  className="rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5"
+>
+  Favorite
+</button>
+
 </div>
 
                 </div>
